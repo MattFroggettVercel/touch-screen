@@ -1,0 +1,28 @@
+[Unit]
+Description=TouchScreen Chromium Kiosk
+After=graphical.target touchscreen-server.service
+Wants=touchscreen-server.service
+
+[Service]
+Type=simple
+User=pi
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/chromium \
+  --noerrdialogs \
+  --disable-infobars \
+  --disable-session-crashed-bubble \
+  --kiosk \
+  --incognito \
+  --disable-translate \
+  --disable-features=TranslateUI \
+  --overscroll-history-navigation=0 \
+  --disable-pinch \
+  --autoplay-policy=no-user-gesture-required \
+  http://localhost:5173
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target

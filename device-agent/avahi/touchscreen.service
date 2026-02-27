@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+
+<!--
+  mDNS service advertisement for TouchScreen device.
+  
+  Install to: /etc/avahi/services/touchscreen.service
+  The DEVICE_CODE placeholder is replaced by setup.sh during installation.
+  
+  The companion app discovers devices by scanning for _touchscreen._tcp services.
+-->
+<service-group>
+  <name>TouchScreen DEVICE_CODE</name>
+  <service>
+    <type>_touchscreen._tcp</type>
+    <port>3001</port>
+    <txt-record>code=DEVICE_CODE</txt-record>
+  </service>
+</service-group>

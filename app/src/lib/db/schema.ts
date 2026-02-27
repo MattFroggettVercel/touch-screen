@@ -1,0 +1,106 @@
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  integer,
+  uuid,
+} from "drizzle-orm/pg-core";
+
+// ──────────────────────────────────────────────
+// Better Auth core tables
+// ──────────────────────────────────────────────
+
+export const user = pgTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").notNull().default(false),
+  image: text("image"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const session = pgTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const account = pgTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ──────────────────────────────────────────────
+// App tables
+// ──────────────────────────────────────────────
+
+export const orders = pgTable("orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+  stripeCheckoutSessionId: text("stripe_checkout_session_id").unique(),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  status: text("status").default("pending"),
+  variant: text("variant").notNull(),
+  colour: text("colour"),
+  amountTotal: integer("amount_total"),
+  currency: text("currency").default("gbp"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const creditBalances = pgTable("credit_balances", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  balance: integer("balance").default(0),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const devices = pgTable("devices", {
+  code: text("code").primaryKey(),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+  name: text("name"),
+  registeredAt: timestamp("registered_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// NOTE: Sandbox columns (sandboxId, sandboxUrl) and HA discovery columns
+// (haUrl, haEntities, haDevices, haAreas, haDiscoveredAt) have been removed.
+//
+// - Sandboxes are now ephemeral and demo-only (no DB persistence).
+// - HA entity data flows ephemerally during editing: HA -> Pi -> Phone ->
+//   API request body -> LLM prompt -> discarded. Never stored in the cloud.
+//
+// NOTE: The `deploys` table has been removed.
+// Deployments are now handled locally on the Pi via the local server's
+// POST /api/build endpoint, triggered from the React Native app.

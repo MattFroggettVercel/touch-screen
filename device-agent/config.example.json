@@ -1,0 +1,9 @@
+{
+  "deviceCode": "YOUR_DEVICE_CODE",
+  "dashboardDir": "/opt/touchscreen/dashboard",
+  "serverPort": 3001,
+  "devPort": 5173,
+  "productionPort": 5173,
+  "haUrl": "http://homeassistant:8123",
+  "haToken": "YOUR_HA_LONG_LIVED_ACCESS_TOKEN"
+}

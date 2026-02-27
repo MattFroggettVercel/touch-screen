@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Device viewport: 720×720 px on an 84×84 mm screen (~254 PPI, DPR 1).
+ * Base font-size is set to 28px (~2.8 mm) so that un-classed text is
+ * legible at arm's length on a desk or wall mount.
+ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 720px;
+  height: 720px;
+  overflow: hidden;
+  background: #0d0d1a;
+  color: #f5f5f0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 28px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Prevent pull-to-refresh / overscroll on the device */
+body {
+  overscroll-behavior: none;
+}

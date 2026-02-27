@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# env files
+.env*
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# editor
+*.swp
+*.swo
+*~
+
+# misc
+*.pem
+*.tsbuildinfo

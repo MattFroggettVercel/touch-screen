@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Touch Screen — Prezentare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --fg: #f5f5f0;
+      --accent: #c9a962;
+      --muted: #888;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+
+    .deck {
+      height: 100%;
+      display: flex;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide {
+      min-width: 100vw;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 4rem;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      font-family: var(--serif);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      line-height: 1.6;
+      max-width: 600px;
+      color: var(--muted);
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      color: var(--fg);
+      opacity: 0.9;
+    }
+
+    /* Slide 1 - Title */
+    .slide-title {
+      background: 
+        radial-gradient(ellipse at 30% 20%, rgba(201, 169, 98, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(201, 169, 98, 0.05) 0%, transparent 50%),
+        var(--bg);
+    }
+
+    .slide-title h1 {
+      font-size: clamp(4rem, 12vw, 9rem);
+    }
+
+    /* Feature slides */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+      max-width: 900px;
+    }
+
+    .feature {
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      text-align: left;
+    }
+
+    .feature h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+    }
+
+    .feature p {
+      font-size: 0.95rem;
+    }
+
+    /* Colors display */
+    .colors {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .color-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .color-swatch {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      transition: transform 0.2s;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.1);
+    }
+
+    .color-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* Visual mockup */
+    .mockup {
+      width: clamp(180px, 25vw, 260px);
+      aspect-ratio: 3/4;
+      background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+      border-radius: 16px;
+      border: 3px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .mockup-screen {
+      width: 85%;
+      height: 90%;
+      background: linear-gradient(180deg, #1e3a5f 0%, #0d1f33 100%);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 0.5rem;
+    }
+
+    .mockup-row {
+      display: flex;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .mockup-tile {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+    }
+
+    .mockup-tile.lit {
+      background: rgba(201, 169, 98, 0.4);
+    }
+
+    /* Plaster-in visual */
+    .plaster-demo {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+
+    .wall-section {
+      width: 200px;
+      height: 280px;
+      background: linear-gradient(135deg, #e8e4dc, #d4d0c8);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .wall-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 40px,
+        rgba(0,0,0,0.02) 40px,
+        rgba(0,0,0,0.02) 41px
+      );
+    }
+
+    .flush-screen {
+      width: 100px;
+      height: 140px;
+      background: linear-gradient(180deg, #1e3a5f 0%, #0d1f33 100%);
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.1);
+    }
+
+    .comparison-label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 1rem;
+    }
+
+    /* Pricing table */
+    .pricing-table {
+      margin-top: 2rem;
+      border-collapse: collapse;
+    }
+
+    .pricing-table th,
+    .pricing-table td {
+      padding: 1rem 2rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .pricing-table th {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .pricing-table td {
+      color: var(--muted);
+    }
+
+    .pricing-table .price {
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    /* Bullet list */
+    .bullet-list {
+      list-style: none;
+      text-align: left;
+      margin-top: 1.5rem;
+    }
+
+    .bullet-list li {
+      padding: 0.75rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .bullet-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    /* Two column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      max-width: 1000px;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    .two-col > div {
+      text-align: left;
+    }
+
+    /* Revenue visual */
+    .revenue-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      height: 150px;
+      margin-top: 2rem;
+    }
+
+    .revenue-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .bar {
+      width: 100%;
+      max-width: 60px;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.5s ease-out;
+    }
+
+    .bar-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .nav-dot.active {
+      background: var(--accent);
+      transform: scale(1.2);
+    }
+
+    .nav-hint {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .slide {
+        padding: 2rem 1.5rem;
+        padding-bottom: 5rem;
+        overflow-y: auto;
+        justify-content: flex-start;
+        padding-top: 3rem;
+      }
+
+      h2 {
+        font-size: clamp(1.5rem, 6vw, 2.5rem);
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .feature {
+        padding: 1rem;
+      }
+
+      .feature h3 {
+        font-size: 1.1rem;
+      }
+
+      .colors {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .color-swatch {
+        width: 45px;
+        height: 45px;
+      }
+
+      .color-label {
+        font-size: 0.75rem;
+      }
+
+      .pricing-table {
+        font-size: 0.85rem;
+      }
+
+      .pricing-table th,
+      .pricing-table td {
+        padding: 0.6rem 0.8rem;
+      }
+
+      .bullet-list li {
+        font-size: 0.95rem;
+        padding: 0.5rem 0;
+        padding-left: 1.2rem;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .mockup {
+        width: clamp(140px, 40vw, 200px);
+      }
+
+      .plaster-demo {
+        transform: scale(0.8);
+      }
+
+      .nav {
+        bottom: 1rem;
+      }
+
+      .nav-dot {
+        width: 8px;
+        height: 8px;
+      }
+
+      .nav-hint {
+        display: none;
+      }
+
+      .slide-counter {
+        bottom: 1rem;
+        left: 1rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .slide {
+        padding: 1.5rem 1rem;
+        padding-bottom: 4rem;
+        padding-top: 2rem;
+      }
+
+      .slide-title h1 {
+        font-size: clamp(3rem, 15vw, 5rem);
+      }
+
+      .pricing-table th,
+      .pricing-table td {
+        padding: 0.5rem 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .slide.active h1,
+    .slide.active h2,
+    .slide.active h3 {
+      animation: fadeUp 0.6s ease-out;
+    }
+
+    .slide.active p,
+    .slide.active .feature-grid,
+    .slide.active .colors,
+    .slide.active .mockup,
+    .slide.active .plaster-demo,
+    .slide.active .pricing-table,
+    .slide.active .bullet-list,
+    .slide.active .two-col,
+    .slide.active .revenue-bars {
+      animation: fadeUp 0.6s ease-out 0.15s both;
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+    
+    <!-- Slide 1: Titlu -->
+    <section class="slide slide-title active">
+      <h1>Touch<span class="accent">.</span></h1>
+      <p class="tagline">Un mod elegant de a-ți controla casa</p>
+    </section>
+
+    <!-- Slide 2: Problema -->
+    <section class="slide">
+      <h2>Casele inteligente sunt puternice.<br><span class="accent">Dar nu arată premium.</span></h2>
+      <p>Milioane de locuințe au lumini inteligente, încălzire, camere și încuietori. Dar majoritatea oamenilor le controlează prin aplicații aglomerate sau tablete ieftine lipite pe perete cu velcro.</p>
+    </section>
+
+    <!-- Slide 3: Problema complexității -->
+    <section class="slide">
+      <h2>Opțiunile de azi necesită <span class="accent">cunoștințe tehnice</span></h2>
+      <ul class="bullet-list">
+        <li>Crearea unui dashboard personalizat durează ore de configurare</li>
+        <li>Necesită cunoașterea YAML, CSS sau a unui software specializat</li>
+        <li>Majoritatea oamenilor renunță — sau nici nu încep</li>
+      </ul>
+      <p style="margin-top: 2rem;">Controlul casei inteligente există. Dar nu e accesibil oamenilor obișnuiți.</p>
+    </section>
+
+    <!-- Slide 4: Deblocarea -->
+    <section class="slide">
+      <h2>AI schimbă totul.<br><span class="accent">Complet.</span></h2>
+      <p>Descrie ce vrei. Primești o interfață funcțională. Fără cod, fără configurare, fără curbă de învățare.</p>
+      <p style="margin-top: 1.5rem; color: var(--fg);">Aceasta este deblocarea — controlul casei la îndemâna tuturor.</p>
+    </section>
+
+    <!-- Slide 5: Confidențialitate -->
+    <section class="slide">
+      <h2>Proiectat pentru confidențialitate.<br><span class="accent">Fără dependență de cloud.</span></h2>
+      <ul class="bullet-list">
+        <li>AI generează interfața o singură dată — apoi e instalată local</li>
+        <li>Dispozitivul comunică direct cu casa ta, nu cu internetul</li>
+        <li>Niciun transfer de date către servere în utilizarea zilnică</li>
+        <li>Funcționează chiar dacă internetul se întrerupe</li>
+      </ul>
+      <p style="margin-top: 2rem;">Casa ta. Datele tale. În rețeaua ta.</p>
+    </section>
+
+    <!-- Slide 6: Produsul -->
+    <section class="slide">
+      <div class="mockup">
+        <div class="mockup-screen">
+          <div class="mockup-row">
+            <div class="mockup-tile lit"></div>
+            <div class="mockup-tile"></div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-tile"></div>
+            <div class="mockup-tile lit"></div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-tile"></div>
+            <div class="mockup-tile"></div>
+          </div>
+        </div>
+      </div>
+      <h2>Un ecran tactil dedicat.<br><span class="accent">Creat special pentru asta.</span></h2>
+      <p>Un dispozitiv. Un singur scop. Controlează totul din casa ta cu o atingere — lumini, muzică, încălzire, camere, încuietori. Fără dezordine, fără compromisuri.</p>
+    </section>
+
+    <!-- Slide 7: Instalare premium -->
+    <section class="slide">
+      <h2>Pentru locuințe de lux:<br><span class="accent">Instalare îngropată în perete</span></h2>
+      <p>Ecranul stă la nivelul peretelui — fără borduri, fără rame, fără plastic. Doar o suprafață de sticlă continuă. Genul de finisaj pe care îl vezi în hoteluri de lux și construcții noi premium.</p>
+      <div class="plaster-demo">
+        <div class="wall-section">
+          <div class="flush-screen"></div>
+        </div>
+      </div>
+      <span class="comparison-label">La nivelul peretelui — invizibil până când ai nevoie de el</span>
+    </section>
+
+    <!-- Slide 8: Freestanding -->
+    <section class="slide">
+      <h2>Sau alege varianta <span class="accent">independentă</span></h2>
+      <p>Pune-l oriunde. Mută-l când ai nevoie. Perfect pentru bucătărie, noptieră, birou — sau pentru cei care locuiesc în chirie și nu pot modifica pereții.</p>
+      <div class="colors">
+        <div class="color-option">
+          <div class="color-swatch" style="background: #1a1a1a;"></div>
+          <span class="color-label">Cărbune</span>
+        </div>
+        <div class="color-option">
+          <div class="color-swatch" style="background: #f5f5f0;"></div>
+          <span class="color-label">Piatră</span>
+        </div>
+        <div class="color-option">
+          <div class="color-swatch" style="background: #c9a962;"></div>
+          <span class="color-label">Alamă</span>
+        </div>
+        <div class="color-option">
+          <div class="color-swatch" style="background: #2d4a3e;"></div>
+          <span class="color-label">Pădure</span>
+        </div>
+        <div class="color-option">
+          <div class="color-swatch" style="background: #8b7355;"></div>
+          <span class="color-label">Nuc</span>
+        </div>
+      </div>
+      <p style="margin-top: 2rem;">Baze premium în culori care se potrivesc cu interioarele reale — nu doar negru sau alb.</p>
+    </section>
+
+    <!-- Slide 9: Interfață AI -->
+    <section class="slide">
+      <h2>Interfața ta.<br><span class="accent">Creată de AI.</span></h2>
+      <p>Nu învăța software complicat. Descrie pur și simplu ce vrei, în limbaj natural. AI generează un dashboard personalizat pentru casa ta — și îl poți modifica oricând.</p>
+      <div class="feature-grid" style="margin-top: 2.5rem;">
+        <div class="feature">
+          <h3>„Arată-mi luminile și termostatul"</h3>
+          <p>Simplu. Primești un layout curat cu două panouri.</p>
+        </div>
+        <div class="feature">
+          <h3>„Temă întunecată cu control pe camere"</h3>
+          <p>Mai specific. AI construiește exact ce descrii.</p>
+        </div>
+        <div class="feature">
+          <h3>„Adaugă camerele sus"</h3>
+          <p>Iterează oricând. Casa ta se schimbă — ecranul ține pasul.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10: Configurare ușoară -->
+    <section class="slide">
+      <h2>Configurare în <span class="accent">câteva minute</span></h2>
+      <div class="feature-grid">
+        <div class="feature">
+          <h3>1. Conectează</h3>
+          <p>Împerechează cu telefonul prin Bluetooth. Introdu datele WiFi. Gata.</p>
+        </div>
+        <div class="feature">
+          <h3>2. Descrie</h3>
+          <p>Spune aplicației cum vrei să arate dashboard-ul. AI îl construiește.</p>
+        </div>
+        <div class="feature">
+          <h3>3. Folosește</h3>
+          <p>Interfața ta personalizată, stocată pe dispozitiv. Funcționează fără internet.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11: Model de business -->
+    <section class="slide">
+      <h2>Cum generăm venituri</h2>
+      <p>Două surse de venit care se compun în timp.</p>
+      <div class="two-col">
+        <div>
+          <h3 class="accent">Hardware</h3>
+          <p>Vindem dispozitivul la un preț accesibil. Profitabil din prima zi — fără a depinde de achiziții viitoare.</p>
+        </div>
+        <div>
+          <h3 class="accent">Credite AI</h3>
+          <p>Fiecare dispozitiv vine cu credite pentru generarea interfeței. Ai nevoie de mai multe? Cumperi pachete de credite. Fără abonamente obligatorii.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 12: Prețuri -->
+    <section class="slide">
+      <h2>Modelul de <span class="accent">prețuri</span></h2>
+      <table class="pricing-table">
+        <tr>
+          <th>Element</th>
+          <th>Preț</th>
+          <th>Note</th>
+        </tr>
+        <tr>
+          <td>Dispozitiv Touch</td>
+          <td class="price">£99</td>
+          <td>Include 10 credite AI pentru început</td>
+        </tr>
+        <tr>
+          <td>10 credite</td>
+          <td class="price">£8</td>
+          <td>£0,80 per modificare de interfață</td>
+        </tr>
+        <tr>
+          <td>25 credite</td>
+          <td class="price">£15</td>
+          <td>£0,60 fiecare — pentru cei care modifică des</td>
+        </tr>
+        <tr>
+          <td>Nelimitat</td>
+          <td class="price">£5/lună</td>
+          <td>Opțional — doar pentru utilizatori avansați</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Slide 13: De ce credite -->
+    <section class="slide">
+      <h2>De ce credite, <span class="accent">nu abonamente</span></h2>
+      <ul class="bullet-list">
+        <li>Nimeni nu vrea să plătească lunar pentru ceva montat pe perete</li>
+        <li>Creditele sunt corecte — plătești pentru ce folosești</li>
+        <li>„Cumpăr 10 credite când am nevoie" — un model mental confortabil</li>
+        <li>Abonamentul e disponibil pentru cine vrea — dar opțional</li>
+      </ul>
+      <p style="margin-top: 2rem;">Mai puțină fricțiune. Clienți mai mulțumiți. Tot profitabil.</p>
+    </section>
+
+    <!-- Slide 14: Multi-dispozitiv -->
+    <section class="slide">
+      <h2>O casă. <span class="accent">Mai multe ecrane.</span></h2>
+      <p>Bucătărie, dormitor, hol — fiecare cameră poate avea propriul Touch. Gestionate împreună printr-o singură aplicație. Interfețe diferite pe fiecare ecran, sau aceeași peste tot.</p>
+      <ul class="bullet-list" style="margin-top: 2rem;">
+        <li>Gospodăriile cumpără în medie 2-3 unități</li>
+        <li>Fiecare dispozitiv = mai mult consum de credite în timp</li>
+        <li>Expansiune naturală fără upselling agresiv</li>
+      </ul>
+    </section>
+
+    <!-- Slide 15: Piața -->
+    <section class="slide">
+      <h2><span class="accent">Piața</span></h2>
+      <table class="pricing-table">
+        <tr>
+          <th>Segment</th>
+          <th>Dimensiune</th>
+          <th>Sincronizare</th>
+        </tr>
+        <tr>
+          <td>Utilizatori Home Assistant</td>
+          <td class="price">1M+</td>
+          <td>Anul 1 — ținta principală</td>
+        </tr>
+        <tr>
+          <td>Alte platforme locale (Hubitat, etc.)</td>
+          <td class="price">200k+</td>
+          <td>Anul 2</td>
+        </tr>
+        <tr>
+          <td>Piața mainstream smart home</td>
+          <td class="price">300M+</td>
+          <td>Plafon pe termen lung</td>
+        </tr>
+      </table>
+      <p style="margin-top: 2rem;">Începem de nișă. Demonstrăm produsul. Apoi ne extindem.</p>
+    </section>
+
+    <!-- Slide 16: Pâlnie -->
+    <section class="slide">
+      <h2>Pâlnia <span class="accent">Anului 1</span></h2>
+      <ul class="bullet-list">
+        <li><strong>1.000.000</strong> — Instalări Home Assistant</li>
+        <li><strong>100.000</strong> — Conștienți de produs (Reddit, YouTube, forumuri)</li>
+        <li><strong>20.000</strong> — Interesați de un panou de perete</li>
+        <li><strong>1.000–4.000</strong> — Conversii în Anul 1</li>
+      </ul>
+      <p style="margin-top: 2rem;">Chiar și estimările pesimiste indică peste 1.000 de unități vândute.</p>
+    </section>
+
+    <!-- Slide 17: Proiecții multi-an -->
+    <section class="slide">
+      <h2>Proiecții pe <span class="accent">3 ani</span></h2>
+      <table class="pricing-table">
+        <tr>
+          <th>An</th>
+          <th>Unități</th>
+          <th>Venituri</th>
+          <th>Note</th>
+        </tr>
+        <tr>
+          <td>Anul 1</td>
+          <td>1.500</td>
+          <td class="price">£50k</td>
+          <td>Doar HA, marketing organic</td>
+        </tr>
+        <tr>
+          <td>Anul 2</td>
+          <td>5.000</td>
+          <td class="price">£180k</td>
+          <td>+ alte platforme, reclame plătite</td>
+        </tr>
+        <tr>
+          <td>Anul 3</td>
+          <td>15.000</td>
+          <td class="price">£500k+</td>
+          <td>+ canal trade, internațional</td>
+        </tr>
+      </table>
+      <p style="margin-top: 2rem;">Veniturile din credite se compun pe măsură ce baza instalată crește.</p>
+    </section>
+
+    <!-- Slide 18: De ce risc scăzut -->
+    <section class="slide">
+      <h2>De ce este <span class="accent">risc scăzut</span></h2>
+      <ul class="bullet-list">
+        <li>Prototipuri printate 3D intern — cost inițial aproape zero</li>
+        <li>Software dezvoltat de fondator — fără salarii de dezvoltatori</li>
+        <li>Marja hardware funcționează singură — creditele sunt bonus</li>
+        <li>Marketing organic mai întâi — £0 cost de achiziție client la start</li>
+        <li>Cel mai rău caz: breakeven și multă experiență acumulată</li>
+      </ul>
+    </section>
+
+    <!-- Slide 19: Rezumat -->
+    <section class="slide">
+      <h2>Oportunitatea</h2>
+      <ul class="bullet-list">
+        <li>Piață smart home în creștere, fără opțiune premium la segment mediu</li>
+        <li>Venituri din hardware + software din prima zi</li>
+        <li>Interfețe generate de AI = suport minim, personalizare maximă</li>
+        <li>Gospodăriile cu mai multe dispozitive compun veniturile per client</li>
+        <li>Rama îngropată deschide canalul instalatorilor/trade</li>
+      </ul>
+    </section>
+
+    <!-- Slide 20: Final -->
+    <section class="slide slide-title">
+      <h1>Touch<span class="accent">.</span></h1>
+      <p class="tagline">Controlează-ți casa cu eleganță</p>
+    </section>
+
+  </div>
+
+  <nav class="nav" id="nav"></nav>
+  <span class="nav-hint">← → sau clic</span>
+  <span class="slide-counter" id="counter">1 / 20</span>
+
+  <script>
+    const deck = document.getElementById('deck');
+    const nav = document.getElementById('nav');
+    const counter = document.getElementById('counter');
+    const slides = document.querySelectorAll('.slide');
+    let current = 0;
+
+    // Build nav dots
+    slides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goTo(i);
+      nav.appendChild(dot);
+    });
+
+    function goTo(index) {
+      if (index < 0 || index >= slides.length) return;
+      current = index;
+      deck.style.transform = `translateX(-${current * 100}vw)`;
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      
+      document.querySelectorAll('.nav-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+      
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === current);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') goTo(current + 1);
+      if (e.key === 'ArrowLeft') goTo(current - 1);
+    });
+
+    // Touch support
+    let touchStart = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStart = e.touches[0].clientX;
+    });
+    document.addEventListener('touchend', (e) => {
+      const diff = touchStart - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        goTo(current + (diff > 0 ? 1 : -1));
+      }
+    });
+  </script>
+</body>
+</html>
