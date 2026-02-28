@@ -2,6 +2,7 @@
  * Home Assistant routes
  *
  * GET  /api/ha/entities  - Full entity snapshot
+ * GET  /api/ha/catalog   - Compact entity catalog (for mobile app discovery)
  * POST /api/ha/service   - Call an HA service
  * GET  /api/ha/areas     - List HA areas
  * GET  /api/ha/devices   - List HA devices
@@ -19,6 +20,18 @@ export function registerHARoutes(app, ctx) {
     }
 
     return { entities: haConnection.getEntities() };
+  });
+
+  // Get compact entity catalog (for mobile app discovery / LLM context)
+  app.get("/api/ha/catalog", async (request, reply) => {
+    const catalog = haConnection.getCatalog();
+    if (!catalog) {
+      return reply
+        .status(503)
+        .send({ error: "Entity catalog not available (Home Assistant not connected)" });
+    }
+
+    return catalog;
   });
 
   // Call a service

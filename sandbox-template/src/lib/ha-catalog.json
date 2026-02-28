@@ -1,0 +1,55 @@
+{
+  "areas": ["Living Room", "Kitchen", "Bedroom", "Hallway"],
+  "entities": {
+    "weather": [
+      { "id": "weather.home", "name": "Home", "area": null }
+    ],
+    "light": [
+      { "id": "light.living_room", "name": "Living Room", "area": "Living Room" },
+      { "id": "light.kitchen", "name": "Kitchen", "area": "Kitchen" },
+      { "id": "light.bedroom", "name": "Bedroom", "area": "Bedroom" }
+    ],
+    "switch": [
+      { "id": "switch.porch_light", "name": "Porch Light", "area": null },
+      { "id": "switch.garden_pump", "name": "Garden Pump", "area": null }
+    ],
+    "climate": [
+      { "id": "climate.hallway", "name": "Hallway Thermostat", "area": "Hallway" }
+    ],
+    "media_player": [
+      { "id": "media_player.living_room", "name": "Living Room Speaker", "area": "Living Room" }
+    ],
+    "sensor": [
+      { "id": "sensor.outdoor_temp", "name": "Outdoor Temperature", "area": null, "class": "temperature", "unit": "°C" },
+      { "id": "sensor.indoor_humidity", "name": "Indoor Humidity", "area": null, "class": "humidity", "unit": "%" },
+      { "id": "sensor.power_usage", "name": "Power Usage", "area": null, "class": "power", "unit": "W" }
+    ],
+    "cover": [
+      { "id": "cover.living_room_blinds", "name": "Living Room Blinds", "area": "Living Room" }
+    ],
+    "scene": [
+      { "id": "scene.movie_night", "name": "Movie Night", "area": null },
+      { "id": "scene.good_morning", "name": "Good Morning", "area": null }
+    ],
+    "camera": [
+      { "id": "camera.front_door", "name": "Front Door", "area": null }
+    ],
+    "binary_sensor": [
+      { "id": "binary_sensor.front_door_motion", "name": "Front Door Motion", "area": null, "class": "motion" },
+      { "id": "binary_sensor.front_door_person", "name": "Front Door Person", "area": null, "class": "person" },
+      { "id": "binary_sensor.front_door_open", "name": "Front Door", "area": null, "class": "door" }
+    ]
+  },
+  "componentMap": {
+    "weather": "WeatherCard",
+    "light": "LightCard",
+    "switch": "SwitchCard",
+    "climate": "ClimateCard",
+    "media_player": "MediaCard",
+    "sensor": "SensorCard",
+    "cover": "CoverCard",
+    "scene": "SceneCard",
+    "camera": "CameraCard",
+    "binary_sensor": "BinarySensorCard"
+  }
+}

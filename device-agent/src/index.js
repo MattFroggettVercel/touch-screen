@@ -18,12 +18,12 @@ import { registerStatusRoutes } from "./routes/status.js";
 import { registerFileRoutes } from "./routes/files.js";
 import { registerHARoutes } from "./routes/ha.js";
 import { registerDevRoutes } from "./routes/dev.js";
-import { registerWifiRoutes } from "./routes/wifi.js";
+// import { registerWifiRoutes } from "./routes/wifi.js";
 import { registerBuildRoutes } from "./routes/build.js";
 import { createHAConnection } from "./services/ha-connection.js";
 import { createViteManager } from "./services/vite-manager.js";
 import { createBuildManager } from "./services/build-manager.js";
-import { createWifiManager } from "./services/wifi-manager.js";
+// import { createWifiManager } from "./services/wifi-manager.js";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -62,10 +62,10 @@ if (!deviceCode) {
 // Services
 // ---------------------------------------------------------------------------
 
-const haConnection = createHAConnection({ haUrl, haToken });
-const viteManager = createViteManager({ dashboardDir, devPort });
+const haConnection = createHAConnection({ haUrl, haToken, dashboardDir });
+const viteManager = createViteManager({ dashboardDir, devPort, haUrl, haToken });
 const buildManager = createBuildManager({ dashboardDir });
-const wifiManager = createWifiManager({ deviceCode });
+// const wifiManager = createWifiManager({ deviceCode });
 
 // Shared context passed to all routes
 const context = {
@@ -77,7 +77,7 @@ const context = {
   haConnection,
   viteManager,
   buildManager,
-  wifiManager,
+  // wifiManager,
 };
 
 // ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ registerStatusRoutes(app, context);
 registerFileRoutes(app, context);
 registerHARoutes(app, context);
 registerDevRoutes(app, context);
-registerWifiRoutes(app, context);
+// registerWifiRoutes(app, context);
 registerBuildRoutes(app, context);
 
 // WebSocket endpoint for real-time HA entity streaming

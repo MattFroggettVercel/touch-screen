@@ -7,7 +7,6 @@ import { db } from "@/lib/db";
 import { creditBalances } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { SYSTEM_PROMPT } from "@/lib/system-prompt";
-import { buildDynamicPrompt } from "@/lib/dynamic-prompt";
 
 export const maxDuration = 60;
 
@@ -18,7 +17,8 @@ const DEV_BYPASS = process.env.NODE_ENV !== "production";
  *
  * - Requires auth (Better Auth session)
  * - Deducts 1 credit per prompt from credit_balances table
- * - HA entities come from request body (haContext sent by companion app)
+ * - HA entities are discovered by the LLM via readFile("src/lib/ha-catalog.json")
+ *   on the device filesystem — not sent in the request body
  * - Tools have NO execute — tool calls stream to client (React Native app)
  * - The companion app's onToolCall executes them against the Pi's REST API
  */
@@ -67,22 +67,7 @@ export async function POST(request: Request) {
   }
 
   // ---- Parse request ----
-  const { messages, haContext } = await request.json();
-
-  // ---- Build system prompt ----
-  let systemPrompt = SYSTEM_PROMPT;
-
-  if (haContext?.entities) {
-    systemPrompt = buildDynamicPrompt(
-      SYSTEM_PROMPT,
-      haContext.entities as Array<{
-        entity_id: string;
-        state: string;
-        attributes: Record<string, unknown>;
-      }>,
-      (haContext.areas as Array<{ area_id: string; name: string }>) || []
-    );
-  }
+  const { messages } = await request.json();
 
   const modelMessages = await convertToModelMessages(messages);
 
@@ -144,7 +129,7 @@ export async function POST(request: Request) {
   // ---- Stream to client (no execute) ----
   const result = streamText({
     model: gateway("anthropic/claude-sonnet-4"),
-    system: systemPrompt,
+    system: SYSTEM_PROMPT,
     messages: modelMessages,
     stopWhen: stepCountIs(10),
     tools: {

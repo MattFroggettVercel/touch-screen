@@ -35,6 +35,20 @@ export interface HAEntity {
   last_updated: string;
 }
 
+export interface CatalogEntity {
+  id: string;
+  name: string;
+  area: string | null;
+  class?: string;
+  unit?: string;
+}
+
+export interface CatalogData {
+  areas: string[];
+  entities: Record<string, CatalogEntity[]>;
+  componentMap: Record<string, string>;
+}
+
 export class DeviceClient {
   private baseUrl: string;
   private ws: WebSocket | null = null;
@@ -207,6 +221,10 @@ export class DeviceClient {
   > {
     const data = await this.request<{ devices: any[] }>("/api/ha/devices");
     return data.devices;
+  }
+
+  async getCatalog(): Promise<CatalogData> {
+    return this.request<CatalogData>("/api/ha/catalog");
   }
 
   // ---- WebSocket for real-time HA entity streaming ----

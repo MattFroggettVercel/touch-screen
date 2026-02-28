@@ -22,7 +22,7 @@ import { createTimeoutSignal } from "@/lib/fetch-timeout";
 
 export default function TestDeviceScreen() {
   const [deviceCode, setDeviceCode] = useState("TEST123456");
-  const [piIP, setPiIP] = useState("");
+  const [piIP, setPiIP] = useState("192.168.1.239");
   const [loading, setLoading] = useState(false);
 
   const canSubmit = deviceCode.trim().length === 10 && piIP.trim().length > 0;

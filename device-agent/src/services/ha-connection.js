@@ -3,14 +3,48 @@
  *
  * Maintains a long-lived WebSocket connection to HA, tracks entity state,
  * and provides real-time entity streaming to subscribers.
+ *
+ * When dashboardDir is provided, writes a compact entity catalog file
+ * (ha-catalog.json) to the dashboard project so the LLM can discover
+ * available entities via its readFile tool.
  */
 
 import WebSocket from "ws";
+import { writeFileSync, mkdirSync } from "fs";
+import { join, dirname } from "path";
 
 const RECONNECT_DELAY_MS = 5000;
 const COMMAND_TIMEOUT_MS = 30000;
 
-export function createHAConnection({ haUrl, haToken }) {
+/** Domains that have a corresponding dashboard component */
+const SUPPORTED_DOMAINS = new Set([
+  "light",
+  "switch",
+  "sensor",
+  "climate",
+  "media_player",
+  "cover",
+  "scene",
+  "camera",
+  "binary_sensor",
+  "weather",
+]);
+
+/** Maps each supported domain to its dashboard component name */
+const COMPONENT_MAP = {
+  light: "LightCard",
+  switch: "SwitchCard",
+  sensor: "SensorCard",
+  climate: "ClimateCard",
+  media_player: "MediaCard",
+  cover: "CoverCard",
+  scene: "SceneCard",
+  camera: "CameraCard",
+  binary_sensor: "BinarySensorCard",
+  weather: "WeatherCard",
+};
+
+export function createHAConnection({ haUrl, haToken, dashboardDir }) {
   let ws = null;
   let msgId = 1;
   let connected = false;
@@ -18,6 +52,8 @@ export function createHAConnection({ haUrl, haToken }) {
   let entities = {};
   let areas = [];
   let devices = [];
+  let entityRegistry = [];
+  let catalog = null;
   const pending = new Map();
   const entityListeners = new Set();
   const statusListeners = new Set();
@@ -116,12 +152,14 @@ export function createHAConnection({ haUrl, haToken }) {
   }
 
   async function fetchInitialData() {
-    // Fetch all states, devices, and areas in parallel
-    const [statesResp, devicesResp, areasResp] = await Promise.all([
-      sendCommand("get_states"),
-      sendCommand("config/device_registry/list"),
-      sendCommand("config/area_registry/list"),
-    ]);
+    // Fetch all states, devices, areas, and entity registry in parallel
+    const [statesResp, devicesResp, areasResp, entityRegResp] =
+      await Promise.all([
+        sendCommand("get_states"),
+        sendCommand("config/device_registry/list"),
+        sendCommand("config/area_registry/list"),
+        sendCommand("config/entity_registry/list"),
+      ]);
 
     // Process entities
     const states = statesResp.result || [];
@@ -153,11 +191,112 @@ export function createHAConnection({ haUrl, haToken }) {
       name: a.name,
     }));
 
+    // Process entity registry (for entity → device/area mapping)
+    entityRegistry = entityRegResp.result || [];
+
     console.log(
       `[ha] Loaded ${Object.keys(entities).length} entities, ${devices.length} devices, ${areas.length} areas`
     );
 
+    // Build and write the entity catalog for LLM discovery
+    catalog = buildCatalog();
+    writeCatalog();
+
     notifyEntityListeners();
+  }
+
+  // ---- Catalog generation ----
+
+  /**
+   * Build a compact entity catalog for LLM consumption.
+   * Only includes supported domains with minimal metadata.
+   */
+  function buildCatalog() {
+    // Build area lookup: area_id → name
+    const areaMap = new Map();
+    for (const a of areas) {
+      areaMap.set(a.area_id, a.name);
+    }
+
+    // Build device → area lookup: device_id → area_id
+    const deviceAreaMap = new Map();
+    for (const d of devices) {
+      if (d.area_id) deviceAreaMap.set(d.id, d.area_id);
+    }
+
+    // Build entity → area lookup using entity registry
+    // Entity can have its own area_id, or inherit from its device
+    const entityAreaMap = new Map();
+    for (const reg of entityRegistry) {
+      const entityAreaId = reg.area_id;
+      const deviceAreaId = reg.device_id
+        ? deviceAreaMap.get(reg.device_id)
+        : null;
+      const resolvedAreaId = entityAreaId || deviceAreaId;
+      if (resolvedAreaId) {
+        entityAreaMap.set(reg.entity_id, areaMap.get(resolvedAreaId) || null);
+      }
+    }
+
+    // Group entities by domain, filtering to supported domains only
+    const grouped = {};
+    for (const e of Object.values(entities)) {
+      const domain = e.entity_id.split(".")[0];
+      if (!SUPPORTED_DOMAINS.has(domain)) continue;
+
+      if (!grouped[domain]) grouped[domain] = [];
+
+      const entry = {
+        id: e.entity_id,
+        name: e.attributes.friendly_name || e.entity_id.split(".")[1],
+        area: entityAreaMap.get(e.entity_id) || null,
+      };
+
+      // Add sensor-specific metadata
+      if (domain === "sensor") {
+        if (e.attributes.device_class) entry.class = e.attributes.device_class;
+        if (e.attributes.unit_of_measurement)
+          entry.unit = e.attributes.unit_of_measurement;
+      }
+
+      // Add binary_sensor device_class
+      if (domain === "binary_sensor" && e.attributes.device_class) {
+        entry.class = e.attributes.device_class;
+      }
+
+      grouped[domain].push(entry);
+    }
+
+    return {
+      areas: [...new Set(Object.values(entities)
+        .map((e) => entityAreaMap.get(e.entity_id))
+        .filter(Boolean)
+      )].sort(),
+      entities: grouped,
+      componentMap: { ...COMPONENT_MAP },
+    };
+  }
+
+  /**
+   * Write the catalog file to the dashboard project filesystem.
+   */
+  function writeCatalog() {
+    if (!dashboardDir || !catalog) return;
+
+    const catalogPath = join(dashboardDir, "src", "lib", "ha-catalog.json");
+    try {
+      mkdirSync(dirname(catalogPath), { recursive: true });
+      writeFileSync(catalogPath, JSON.stringify(catalog, null, 2), "utf-8");
+      const entityCount = Object.values(catalog.entities).reduce(
+        (sum, arr) => sum + arr.length,
+        0
+      );
+      console.log(
+        `[ha] Wrote entity catalog (${entityCount} entities, ${catalog.areas.length} areas) to ${catalogPath}`
+      );
+    } catch (err) {
+      console.error(`[ha] Failed to write catalog: ${err.message}`);
+    }
   }
 
   async function subscribeToStateChanges() {
@@ -273,6 +412,10 @@ export function createHAConnection({ haUrl, haToken }) {
     return devices;
   }
 
+  function getCatalog() {
+    return catalog;
+  }
+
   function onEntitiesChanged(fn) {
     entityListeners.add(fn);
     return () => entityListeners.delete(fn);
@@ -291,6 +434,7 @@ export function createHAConnection({ haUrl, haToken }) {
     getEntities,
     getAreas,
     getDevices,
+    getCatalog,
     onEntitiesChanged,
     onStatusChanged,
   };

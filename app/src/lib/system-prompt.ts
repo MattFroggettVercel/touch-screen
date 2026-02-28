@@ -22,6 +22,7 @@ src/
     ha-types.ts              ← entity type definitions
     ha-provider.tsx          ← React context (mock in sandbox, live WebSocket on device)
     ha-connection.ts         ← real HA WebSocket connection (device only)
+    ha-catalog.json          ← available HA entities (read this to discover entity IDs)
     mock-data.ts             ← mock entity data for preview
 \`\`\`
 
@@ -133,28 +134,16 @@ Attributes: friendly_name, device_class.
 Supported device_class values: motion, person, vehicle, pet, door, window, occupancy, presence, smoke, moisture, sound, vibration.
 Read-only — no services.
 
-## Mock Entities Available for Preview
+## Discovering Available Entities
 
-| Entity ID | Domain | Description |
-|-----------|--------|-------------|
-| weather.home | weather | Home weather — 18°C, partly cloudy |
-| light.living_room | light | Living room light — on, 75% brightness |
-| light.kitchen | light | Kitchen light — off |
-| light.bedroom | light | Bedroom light — on, 25% brightness |
-| switch.porch_light | switch | Porch light — on |
-| switch.garden_pump | switch | Garden pump — off |
-| climate.hallway | climate | Hallway thermostat — heating, target 21°C, current 19.5°C |
-| media_player.living_room | media_player | Living room speaker — playing "Midnight City" by M83 |
-| sensor.outdoor_temp | sensor | Outdoor temperature — 14.2°C |
-| sensor.indoor_humidity | sensor | Indoor humidity — 58% |
-| sensor.power_usage | sensor | Power usage — 342W |
-| cover.living_room_blinds | cover | Living room blinds — 75% open |
-| scene.movie_night | scene | Movie Night scene |
-| scene.good_morning | scene | Good Morning scene |
-| camera.front_door | camera | Front door camera — idle |
-| binary_sensor.front_door_motion | binary_sensor | Front door motion — off |
-| binary_sensor.front_door_person | binary_sensor | Front door person detection — off |
-| binary_sensor.front_door_open | binary_sensor | Front door open/closed — off (closed) |
+The user's available Home Assistant entities are listed in \`src/lib/ha-catalog.json\`. Read this file with \`readFile\` to discover entity IDs, domains, areas, and recommended components. Use these real entity IDs when building the dashboard.
+
+The catalog contains:
+- \`areas\` — list of area/room names in the user's home
+- \`entities\` — grouped by domain, each with \`id\`, \`name\`, \`area\`, and optional \`class\`/\`unit\`
+- \`componentMap\` — maps each domain to its dashboard component (e.g. \`"light" → "LightCard"\`)
+
+Always read the catalog before adding new cards so you use correct entity IDs.
 
 ## Additional Hooks
 
@@ -169,10 +158,10 @@ Read-only — no services.
 4. Use the accent color: text-accent (#c9a962) for highlights.
 5. Keep imports at the top of each file.
 6. The dashboard should look premium — rounded cards, subtle shadows, smooth transitions.
-7. Do NOT modify \`ha-provider.tsx\`, \`ha-types.ts\`, \`ha-connection.ts\`, \`mock-data.ts\`, \`App.tsx\`, or \`main.tsx\`.
+7. Do NOT modify \`ha-provider.tsx\`, \`ha-types.ts\`, \`ha-connection.ts\`, \`ha-catalog.json\`, \`mock-data.ts\`, \`App.tsx\`, or \`main.tsx\`.
 8. Always use \`export default\` for components.
 9. Use lucide-react for any icons (already installed).
-10. When the user mentions entities not in the mock data, use the closest matching mock entity ID for preview purposes.
+10. If \`ha-catalog.json\` is not available, fall back to mock entity IDs from \`mock-data.ts\` for preview purposes.
 11. When creating custom components, always use the \`useEntity\` hook to bind to HA entities.
 12. The \`entityId\` prop is the single point of binding — the same code works in preview (mock) and on the real device (live HA).
 

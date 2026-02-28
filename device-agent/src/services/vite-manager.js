@@ -10,7 +10,7 @@ import { spawn } from "child_process";
 import { existsSync } from "fs";
 import { join } from "path";
 
-export function createViteManager({ dashboardDir, devPort = 5173 }) {
+export function createViteManager({ dashboardDir, devPort = 5173, haUrl = "", haToken = "" }) {
   let process_ = null;
   let running = false;
 
@@ -43,9 +43,10 @@ export function createViteManager({ dashboardDir, devPort = 5173 }) {
       stdio: "pipe",
       env: {
         ...process.env,
-        // Always mock mode in dev server — real HA connection is in production build only
-        VITE_HA_URL: "",
-        VITE_HA_TOKEN: "",
+        // Pass HA credentials so the dashboard can connect to real HA.
+        // Falls back to mock mode if no credentials are configured.
+        VITE_HA_URL: haUrl || "",
+        VITE_HA_TOKEN: haToken || "",
       },
     });
 
@@ -66,8 +67,8 @@ export function createViteManager({ dashboardDir, devPort = 5173 }) {
       }
     });
 
-    process_.on("close", (code) => {
-      console.log(`[vite] Dev server exited with code ${code}`);
+    process_.on("close", (code, signal) => {
+      console.log(`[vite] Dev server exited with code ${code}, signal ${signal}`);
       running = false;
       process_ = null;
     });

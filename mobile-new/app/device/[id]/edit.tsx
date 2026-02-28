@@ -44,8 +44,8 @@ import {
 import { fetch as expoFetch } from "expo/fetch";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DeviceClient } from "@/lib/device-client";
-import { useHAEntities } from "@/lib/ha-stream";
 import { authClient } from "@/lib/auth-client";
+import EntityBrowser from "@/components/EntityBrowser";
 import {
   COLORS,
   CLOUD_API_URL,
@@ -88,6 +88,7 @@ export default function EditScreen() {
   const [devServerReady, setDevServerReady] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
+  const [showEntityBrowser, setShowEntityBrowser] = useState(false);
 
   // Activity log
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
@@ -171,24 +172,17 @@ export default function EditScreen() {
     })();
   }, []);
 
-  // HA entities for the system prompt context
-  const { entities: haEntities } = useHAEntities(client);
-
   // Chat transport — sends to the cloud API (tools without execute)
+  // HA entities are discovered by the LLM via readFile("src/lib/ha-catalog.json")
+  // on the device filesystem, not sent with every request.
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         fetch: expoFetch as any,
         api: `${CLOUD_API_URL}/api/chat`,
         headers: () => getAuthCookieHeaders(),
-        body: {
-          haContext: {
-            entities: Object.values(haEntities),
-            areas: [],
-          },
-        },
       }),
-    [haEntities]
+    []
   );
 
   const { messages, sendMessage, addToolOutput, status, error, clearError } =
@@ -460,6 +454,14 @@ export default function EditScreen() {
           <Text style={styles.backButtonText}>{"←"}</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => setShowEntityBrowser(true)}
+          style={styles.entitiesButton}
+        >
+          <Text style={styles.entitiesButtonIcon}>🏠</Text>
+          <Text style={styles.entitiesButtonText}>Entities</Text>
+        </TouchableOpacity>
+
         <View style={styles.topBarRight}>
           {credits !== null && (
             <View style={styles.creditBadge}>
@@ -543,6 +545,13 @@ export default function EditScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Entity browser modal */}
+      <EntityBrowser
+        client={client}
+        visible={showEntityBrowser}
+        onClose={() => setShowEntityBrowser(false)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -583,6 +592,25 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 20,
     color: COLORS.text,
+  },
+  entitiesButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  entitiesButtonIcon: {
+    fontSize: 14,
+  },
+  entitiesButtonText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.5)",
+    fontWeight: "500",
   },
   topBarRight: {
     flexDirection: "row",
