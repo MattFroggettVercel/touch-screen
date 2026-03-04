@@ -567,6 +567,20 @@ export class ServiceManager extends EventEmitter {
     }
   }
 
+  /** Shutdown the Raspberry Pi */
+  shutdownPi() {
+    this._log("pi", "Sending shutdown command to Pi...");
+    const ok = run(
+      `ssh -o ConnectTimeout=5 ${PI_HOST} "sudo shutdown -h now"`,
+      { silent: true, timeout: 10000 }
+    );
+    if (ok) {
+      this._log("pi", "Shutdown command sent — Pi is powering off.");
+    } else {
+      this._log("pi", "Failed to send shutdown command.");
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Cleanup
   // -------------------------------------------------------------------------

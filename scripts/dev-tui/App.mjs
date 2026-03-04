@@ -24,11 +24,14 @@ export function App({ services }) {
   const [logVersion, setLogVersion] = useState(0);
   const [haConnected, setHaConnected] = useState(false);
   const [status, setStatus] = useState("");
+  const [confirm, setConfirm] = useState(null); // { label, action }
   const statusTimer = useRef(null);
 
   // We keep mutable refs so the useInput callback always sees current values
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
+  const confirmRef = useRef(confirm);
+  confirmRef.current = confirm;
 
   // Force re-render when any service logs
   useEffect(() => {
@@ -56,6 +59,20 @@ export function App({ services }) {
 
   // Hotkey handling
   useInput((input, key) => {
+    const ch = input.toLowerCase();
+
+    // If a confirmation is pending, only accept Y/N
+    if (confirmRef.current) {
+      if (ch === "y") {
+        confirmRef.current.action();
+        setConfirm(null);
+      } else if (ch === "n" || key.escape) {
+        flash("Cancelled");
+        setConfirm(null);
+      }
+      return;
+    }
+
     // Tab switching: 1-5
     const num = parseInt(input, 10);
     if (num >= 1 && num <= SERVICE_DEFS.length) {
@@ -63,23 +80,9 @@ export function App({ services }) {
       return;
     }
 
-    const ch = input.toLowerCase();
-
     if (ch === "r") {
       flash("Restarting Pi agent...");
       services.restartPiAgent();
-      return;
-    }
-
-    if (ch === "s") {
-      flash("Force syncing...");
-      services.forceSync();
-      return;
-    }
-
-    if (ch === "v") {
-      flash("Restarting Vite...");
-      services.restartVite();
       return;
     }
 
@@ -89,9 +92,14 @@ export function App({ services }) {
       return;
     }
 
-    if (ch === "c") {
-      services.clearLog(activeTabRef.current);
-      flash(`Cleared ${activeTabRef.current} log`);
+    if (ch === "x") {
+      setConfirm({
+        label: "Shutdown Pi? This will power off the Raspberry Pi.",
+        action: () => {
+          flash("Shutting down Pi...");
+          services.shutdownPi();
+        },
+      });
       return;
     }
 
@@ -114,7 +122,10 @@ export function App({ services }) {
 
       <${LogPane} lines=${lines} />
 
-      <${HotkeyBar} status=${status} />
+      <${HotkeyBar}
+        status=${status}
+        confirmLabel=${confirm?.label}
+      />
     </Box>
   `;
 }
