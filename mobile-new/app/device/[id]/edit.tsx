@@ -52,6 +52,13 @@ import {
   PI_SERVER_PORT,
 } from "@/lib/constants";
 
+function generateId(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 /** Return auth cookie headers for cloud API requests. */
 function getAuthCookieHeaders(): Record<string, string> {
   const cookies = authClient.getCookie();
@@ -60,13 +67,15 @@ function getAuthCookieHeaders(): Record<string, string> {
 
 // ---- Log entry types ----
 
-type LogEntryType = "status" | "response" | "error";
+type LogEntryType = "status" | "response" | "error" | "rating";
 
 interface LogEntry {
   id: string;
   type: LogEntryType;
   message: string;
   timestamp: number;
+  /** For rating entries: the turn number being rated */
+  turnNumber?: number;
 }
 
 let logIdCounter = 0;
@@ -89,6 +98,15 @@ export default function EditScreen() {
   const [publishing, setPublishing] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [showEntityBrowser, setShowEntityBrowser] = useState(false);
+
+  // Generation feedback flywheel
+  const conversationId = useMemo(() => generateId(), []);
+  const turnNumberRef = useRef(0);
+  const [ratingSelectedScore, setRatingSelectedScore] = useState<{
+    turn: number;
+    score: number;
+  } | null>(null);
+  const [ratingNotes, setRatingNotes] = useState("");
 
   // Activity log
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
@@ -188,6 +206,7 @@ export default function EditScreen() {
   const { messages, sendMessage, addToolOutput, status, error, clearError } =
     useChat({
       transport,
+      body: { conversationId, deviceCode: id },
       sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
       onError: (err) => {
         setChatError(err?.message || "Something went wrong");
@@ -327,6 +346,72 @@ export default function EditScreen() {
     }
   }, [messages, addLog]);
 
+  // Show inline rating bar after AI finishes a response
+  const prevStatusRef = useRef(status);
+  useEffect(() => {
+    const wasWorking =
+      prevStatusRef.current === "submitted" ||
+      prevStatusRef.current === "streaming";
+    prevStatusRef.current = status;
+
+    if (wasWorking && status === "ready" && turnNumberRef.current > 0) {
+      const turn = turnNumberRef.current;
+      const existing = logEntries.find(
+        (e) => e.type === "rating" && e.turnNumber === turn
+      );
+      if (!existing) {
+        setLogEntries((prev) => [
+          ...prev,
+          {
+            id: String(++logIdCounter),
+            type: "rating",
+            message: "",
+            timestamp: Date.now(),
+            turnNumber: turn,
+          },
+        ]);
+      }
+    }
+  }, [status, logEntries]);
+
+  const handleRate = useCallback(
+    (turnNumber: number, score: number, notes?: string) => {
+      setRatingSelectedScore(null);
+      setRatingNotes("");
+
+      setLogEntries((prev) =>
+        prev.map((e) =>
+          e.type === "rating" && e.turnNumber === turnNumber
+            ? { ...e, message: `Rated ${score}/5` }
+            : e
+        )
+      );
+      setTimeout(() => {
+        setLogEntries((prev) =>
+          prev.filter(
+            (e) => !(e.type === "rating" && e.turnNumber === turnNumber)
+          )
+        );
+      }, 2000);
+
+      expoFetch(`${CLOUD_API_URL}/api/generations/rate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthCookieHeaders(),
+        },
+        body: JSON.stringify({
+          conversationId,
+          turnNumber,
+          score,
+          notes: notes || undefined,
+          fullMessages: messages,
+        }),
+      }).catch((err) => console.warn("Rating submission failed:", err?.message));
+    },
+    [conversationId, messages]
+  );
+
   // Update credit count after a successful prompt
   useEffect(() => {
     if (status === "ready" && credits !== null && credits > 0) {
@@ -356,8 +441,11 @@ export default function EditScreen() {
     if (!text || isWorking) return;
     setChatError(null);
     setInput("");
-    // Reset handled tool calls for the new conversation turn
     handledToolCalls.current.clear();
+    turnNumberRef.current += 1;
+    setLogEntries((prev) => prev.filter((e) => e.type !== "rating"));
+    setRatingSelectedScore(null);
+    setRatingNotes("");
     sendMessage({ text });
   }, [input, isWorking, sendMessage]);
 
@@ -401,6 +489,73 @@ export default function EditScreen() {
   // ---- Render helpers ----
 
   const renderLogEntry = ({ item }: { item: LogEntry }) => {
+    if (item.type === "rating") {
+      if (item.message) {
+        return (
+          <View style={styles.ratingEntry}>
+            <Text style={styles.ratingConfirmText}>{item.message}</Text>
+          </View>
+        );
+      }
+
+      const turn = item.turnNumber!;
+      const selected = ratingSelectedScore?.turn === turn ? ratingSelectedScore.score : null;
+      const expanded = selected != null;
+
+      return (
+        <View style={styles.ratingContainer}>
+          <View style={styles.ratingEntry}>
+            <Text style={styles.ratingPromptText}>How did that look?</Text>
+            <View style={styles.ratingScoreRow}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <TouchableOpacity
+                  key={s}
+                  style={[
+                    styles.ratingScoreButton,
+                    selected === s && styles.ratingScoreButtonActive,
+                  ]}
+                  onPress={() => {
+                    setRatingSelectedScore({ turn, score: s });
+                    setRatingNotes("");
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.ratingScoreText,
+                      selected === s && styles.ratingScoreTextActive,
+                    ]}
+                  >
+                    {s}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {expanded && (
+            <View style={styles.ratingNotesRow}>
+              <TextInput
+                style={styles.ratingNotesInput}
+                placeholder="Notes (optional)"
+                placeholderTextColor="rgba(255,255,255,0.2)"
+                value={ratingNotes}
+                onChangeText={setRatingNotes}
+                multiline
+                returnKeyType="done"
+                blurOnSubmit
+              />
+              <TouchableOpacity
+                style={styles.ratingSubmitButton}
+                onPress={() => handleRate(turn, selected!, ratingNotes)}
+              >
+                <Text style={styles.ratingSubmitText}>Submit</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      );
+    }
+
     const isResponse = item.type === "response";
     const isError = item.type === "error";
 
@@ -682,6 +837,82 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: "rgba(248,113,113,0.9)",
+  },
+
+  // Rating entries
+  ratingContainer: {
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  ratingEntry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  ratingPromptText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.4)",
+  },
+  ratingScoreRow: {
+    flexDirection: "row",
+    gap: 5,
+  },
+  ratingScoreButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  ratingScoreButtonActive: {
+    backgroundColor: "rgba(201,169,98,0.2)",
+    borderColor: "rgba(201,169,98,0.4)",
+  },
+  ratingScoreText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.35)",
+  },
+  ratingScoreTextActive: {
+    color: COLORS.accent,
+  },
+  ratingNotesRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+    marginTop: 8,
+  },
+  ratingNotesInput: {
+    flex: 1,
+    fontSize: 13,
+    color: "rgba(255,255,255,0.8)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    maxHeight: 80,
+  },
+  ratingSubmitButton: {
+    backgroundColor: COLORS.accent,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  ratingSubmitText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#000",
+  },
+  ratingConfirmText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.3)",
+    fontStyle: "italic",
+    paddingVertical: 6,
   },
 
   emptyLog: {

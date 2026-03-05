@@ -6,6 +6,8 @@
  * POST /api/packages/install     - Install specific npm package(s)
  */
 
+import { validatePackage } from "../services/file-validator.js";
+
 export function registerBuildRoutes(app, ctx) {
   const { buildManager, viteManager } = ctx;
 
@@ -56,6 +58,12 @@ export function registerBuildRoutes(app, ctx) {
       return reply
         .status(400)
         .send({ error: `Invalid package name: ${packageName}` });
+    }
+
+    const pkgCheck = validatePackage(packageName);
+    if (!pkgCheck.valid) {
+      request.log.warn({ packageName, error: pkgCheck.error }, "Package install rejected");
+      return reply.status(pkgCheck.status).send({ error: pkgCheck.error });
     }
 
     try {

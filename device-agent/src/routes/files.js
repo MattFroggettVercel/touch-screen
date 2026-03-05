@@ -7,8 +7,9 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join, dirname, relative } from "path";
+import { join, dirname, resolve } from "path";
 import { glob } from "glob";
+import { validateWrite, validateRead } from "../services/file-validator.js";
 
 export function registerFileRoutes(app, ctx) {
   const { dashboardDir } = ctx;
@@ -40,8 +41,14 @@ export function registerFileRoutes(app, ctx) {
   app.get("/api/files/*", async (request, reply) => {
     const filePath = request.params["*"];
 
-    if (!filePath || filePath.includes("..")) {
+    if (!filePath) {
       return reply.status(400).send({ error: "Invalid path" });
+    }
+
+    const readCheck = validateRead(filePath, dashboardDir);
+    if (!readCheck.valid) {
+      request.log.warn({ path: filePath, category: "path_traversal" }, "Read rejected");
+      return reply.status(readCheck.status).send({ error: readCheck.error });
     }
 
     const fullPath = join(dashboardDir, filePath);
@@ -64,7 +71,7 @@ export function registerFileRoutes(app, ctx) {
   app.put("/api/files/*", async (request, reply) => {
     const filePath = request.params["*"];
 
-    if (!filePath || filePath.includes("..")) {
+    if (!filePath) {
       return reply.status(400).send({ error: "Invalid path" });
     }
 
@@ -72,6 +79,12 @@ export function registerFileRoutes(app, ctx) {
 
     if (content === undefined || content === null) {
       return reply.status(400).send({ error: "Missing content in body" });
+    }
+
+    const validation = validateWrite(filePath, content, dashboardDir);
+    if (!validation.valid) {
+      request.log.warn({ path: filePath, error: validation.error }, "Write rejected");
+      return reply.status(validation.status).send({ error: validation.error });
     }
 
     const fullPath = join(dashboardDir, filePath);

@@ -94,13 +94,34 @@ export const devices = pgTable("devices", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-// NOTE: Sandbox columns (sandboxId, sandboxUrl) and HA discovery columns
-// (haUrl, haEntities, haDevices, haAreas, haDiscoveredAt) have been removed.
-//
-// - Sandboxes are now ephemeral and demo-only (no DB persistence).
-// - HA entity data flows ephemerally during editing: HA -> Pi -> Phone ->
-//   API request body -> LLM prompt -> discarded. Never stored in the cloud.
-//
-// NOTE: The `deploys` table has been removed.
-// Deployments are now handled locally on the Pi via the local server's
-// POST /api/build endpoint, triggered from the React Native app.
+// ──────────────────────────────────────────────
+// Generation feedback flywheel
+// ──────────────────────────────────────────────
+
+export const generationLogs = pgTable("generation_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversationId: text("conversation_id").notNull(),
+  deviceCode: text("device_code"),
+  turnNumber: integer("turn_number").notNull(),
+  userPrompt: text("user_prompt").notNull(),
+  toolCalls: text("tool_calls"),
+  filesChanged: text("files_changed"),
+  aiResponseExcerpt: text("ai_response_excerpt"),
+  hadErrors: boolean("had_errors").default(false),
+  systemPromptHash: text("system_prompt_hash"),
+  model: text("model"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const generationRatings = pgTable("generation_ratings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  generationLogId: uuid("generation_log_id")
+    .notNull()
+    .references(() => generationLogs.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(),
+  dimensions: text("dimensions"),
+  notes: text("notes"),
+  tags: text("tags"),
+  fullMessages: text("full_messages"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
