@@ -30,12 +30,12 @@ export default function CoverCard({ entityId }: CoverCardProps) {
   };
 
   return (
-    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20">
+    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20 h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between flex-1 min-h-0">
+        <div className="flex items-center gap-3 min-w-0">
           <div
-            className={`p-3 rounded-btn transition-colors duration-300 ${
+            className={`p-3 rounded-btn transition-colors duration-300 shrink-0 ${
               isOpen ? "bg-accent/20" : "bg-white/5"
             }`}
           >
@@ -45,8 +45,8 @@ export default function CoverCard({ entityId }: CoverCardProps) {
               }`}
             />
           </div>
-          <div>
-            <p className="text-device-sm font-medium leading-tight">
+          <div className="min-w-0">
+            <p className="text-device-sm font-medium leading-tight truncate">
               {attr.friendly_name}
             </p>
             <p className="text-device-xs text-white/40 mt-0.5">
@@ -54,17 +54,17 @@ export default function CoverCard({ entityId }: CoverCardProps) {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={handleOpen}
-            className="w-[56px] h-[56px] rounded-btn bg-white/5 active:bg-white/15 transition-colors text-white/50 active:text-white flex items-center justify-center"
+            className="w-[48px] h-[48px] rounded-btn bg-white/5 active:bg-white/15 transition-colors text-white/50 active:text-white flex items-center justify-center"
             aria-label="Open cover"
           >
             <ChevronUp className="w-7 h-7" />
           </button>
           <button
             onClick={handleClose}
-            className="w-[56px] h-[56px] rounded-btn bg-white/5 active:bg-white/15 transition-colors text-white/50 active:text-white flex items-center justify-center"
+            className="w-[48px] h-[48px] rounded-btn bg-white/5 active:bg-white/15 transition-colors text-white/50 active:text-white flex items-center justify-center"
             aria-label="Close cover"
           >
             <ChevronDown className="w-7 h-7" />
@@ -79,7 +79,7 @@ export default function CoverCard({ entityId }: CoverCardProps) {
         max={100}
         value={position}
         onChange={(e) => handlePosition(Number(e.target.value))}
-        className="w-full h-slider-track rounded-full appearance-none bg-white/10 accent-accent cursor-pointer
+        className="w-full h-slider-track rounded-full appearance-none bg-white/10 accent-accent cursor-pointer shrink-0
           [&::-webkit-slider-thumb]:appearance-none
           [&::-webkit-slider-thumb]:w-[48px]
           [&::-webkit-slider-thumb]:h-[48px]

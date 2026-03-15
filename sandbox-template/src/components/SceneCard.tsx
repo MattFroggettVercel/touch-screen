@@ -24,7 +24,7 @@ export default function SceneCard({ entityId }: SceneCardProps) {
   return (
     <button
       onClick={handleActivate}
-      className={`bg-surface rounded-card p-card-px flex items-center gap-4 shadow-lg shadow-black/20 transition-all duration-300 text-left w-full min-h-touch-min ${
+      className={`bg-surface rounded-card p-card-px flex items-center gap-4 shadow-lg shadow-black/20 transition-all duration-300 text-left w-full h-full overflow-hidden ${
         activated ? "ring-1 ring-accent/40 bg-accent/10" : "active:bg-surface-light"
       }`}
     >

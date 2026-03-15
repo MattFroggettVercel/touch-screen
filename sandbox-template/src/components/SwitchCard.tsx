@@ -20,7 +20,7 @@ export default function SwitchCard({ entityId }: SwitchCardProps) {
   return (
     <button
       onClick={handleToggle}
-      className={`bg-surface rounded-card p-card-px flex items-center gap-4 shadow-lg shadow-black/20 transition-all duration-300 text-left w-full min-h-touch-min ${
+      className={`bg-surface rounded-card p-card-px flex items-center gap-4 shadow-lg shadow-black/20 transition-all duration-300 text-left w-full h-full overflow-hidden ${
         isOn ? "ring-1 ring-accent/30" : ""
       }`}
       aria-label={`Toggle ${attr.friendly_name}`}

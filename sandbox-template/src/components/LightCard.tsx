@@ -27,12 +27,12 @@ export default function LightCard({ entityId }: LightCardProps) {
 
   return (
     <div
-      className={`bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20 transition-all duration-300 ${
+      className={`bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20 transition-all duration-300 h-full overflow-hidden ${
         isOn ? "ring-1 ring-accent/30" : ""
       }`}
     >
       {/* Icon + Toggle row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between shrink-0">
         <div
           className={`p-3 rounded-btn transition-colors duration-300 ${
             isOn ? "bg-accent/20" : "bg-white/5"
@@ -44,7 +44,6 @@ export default function LightCard({ entityId }: LightCardProps) {
             }`}
           />
         </div>
-        {/* Toggle — 72×40px to fit in card, whole card is also tappable */}
         <button
           onClick={handleToggle}
           className={`w-[72px] h-[40px] rounded-full transition-all duration-300 relative shrink-0 ${
@@ -61,8 +60,8 @@ export default function LightCard({ entityId }: LightCardProps) {
       </div>
 
       {/* Name + Status */}
-      <div>
-        <p className="text-device-sm font-medium leading-tight">
+      <div className="flex-1 min-h-0">
+        <p className="text-device-sm font-medium leading-tight truncate">
           {attr.friendly_name}
         </p>
         <p className="text-device-xs text-white/40 mt-0.5">
@@ -72,7 +71,7 @@ export default function LightCard({ entityId }: LightCardProps) {
 
       {/* Brightness slider */}
       <div
-        className={`transition-opacity duration-300 ${
+        className={`shrink-0 transition-opacity duration-300 ${
           isOn ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >

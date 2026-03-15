@@ -5,6 +5,7 @@ import {
   boolean,
   integer,
   uuid,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // ──────────────────────────────────────────────
@@ -111,7 +112,9 @@ export const generationLogs = pgTable("generation_logs", {
   systemPromptHash: text("system_prompt_hash"),
   model: text("model"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  uniqueIndex("generation_logs_conv_turn_idx").on(table.conversationId, table.turnNumber),
+]);
 
 export const generationRatings = pgTable("generation_ratings", {
   id: uuid("id").primaryKey().defaultRandom(),

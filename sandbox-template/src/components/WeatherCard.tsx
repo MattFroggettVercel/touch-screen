@@ -50,21 +50,21 @@ export default function WeatherCard({ entityId }: WeatherCardProps) {
   const forecast = (attr.forecast ?? []).slice(0, 4) as WeatherForecast[];
 
   return (
-    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20">
+    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20 h-full overflow-hidden">
       {/* Current conditions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-1 min-h-0">
         <div>
-          <p className="text-device-xs text-white/50 uppercase tracking-wide">
+          <p className="text-device-xs text-white/50 uppercase tracking-wide truncate">
             {attr.friendly_name}
           </p>
-          <p className="text-device-hero font-light mt-1">
+          <p className="text-device-xl font-light mt-1">
             {attr.temperature !== undefined ? `${Math.round(attr.temperature)}°` : "--"}
           </p>
-          <p className="text-device-xs text-white/60 capitalize mt-1">
+          <p className="text-device-xs text-white/60 capitalize mt-1 truncate">
             {condition.replace(/-/g, " ")}
           </p>
         </div>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 shrink-0">
           {conditionIcon[condition] ?? conditionIcon.sunny}
           {attr.humidity !== undefined && (
             <div className="flex items-center gap-1 text-device-xs text-white/40">
@@ -77,17 +77,17 @@ export default function WeatherCard({ entityId }: WeatherCardProps) {
 
       {/* Forecast */}
       {forecast.length > 0 && (
-        <div className="border-t border-white/10 pt-3 grid grid-cols-4 gap-2">
+        <div className="border-t border-white/10 pt-3 grid grid-cols-4 gap-2 shrink-0 overflow-hidden">
           {forecast.map((day) => (
             <div
               key={day.datetime}
               className="flex flex-col items-center gap-1"
             >
-              <span className="text-device-xs text-white/40">
+              <span className="text-device-xs text-white/40 truncate">
                 {dayLabel(day.datetime)}
               </span>
               {smallIcon[day.condition] ?? smallIcon.sunny}
-              <span className="text-device-xs">
+              <span className="text-device-xs truncate">
                 {Math.round(day.temperature)}°{" "}
                 {day.templow !== undefined && (
                   <span className="text-white/30">

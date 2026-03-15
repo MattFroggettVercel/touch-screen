@@ -46,9 +46,9 @@ export default function CameraCard({
       : null;
 
   return (
-    <div className="bg-surface rounded-card overflow-hidden shadow-lg shadow-black/20">
+    <div className="bg-surface rounded-card overflow-hidden shadow-lg shadow-black/20 h-full flex flex-col">
       {/* Camera feed / placeholder */}
-      <div className="relative aspect-square bg-black/40 flex items-center justify-center">
+      <div className="relative flex-1 min-h-0 bg-black/40 flex items-center justify-center">
         {isOff ? (
           <div className="flex flex-col items-center gap-2 text-white/30">
             <VideoOff className="w-14 h-14" />
@@ -87,7 +87,7 @@ export default function CameraCard({
       </div>
 
       {/* Info bar */}
-      <div className="px-card-px py-3 flex items-center justify-between">
+      <div className="px-card-px py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <Video className="w-7 h-7 text-accent" />
           <p className="text-device-sm font-medium">{attr.friendly_name}</p>

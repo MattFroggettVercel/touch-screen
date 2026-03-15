@@ -45,6 +45,9 @@ export default {
         "card-px": "24px",
         "card-py": "20px",
         "card-gap": "16px",
+
+        /* Available content area (720 - 2×20px padding) */
+        "content-device": "680px",
       },
 
       /* ── Device-aware font sizes ────────────────────────────── */

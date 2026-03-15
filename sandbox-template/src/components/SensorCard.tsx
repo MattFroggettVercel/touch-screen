@@ -31,7 +31,7 @@ export default function SensorCard({ entityId }: SensorCardProps) {
     );
 
   return (
-    <div className="bg-surface rounded-card p-card-px flex flex-col gap-2 shadow-lg shadow-black/20">
+    <div className="bg-surface rounded-card p-card-px flex flex-col gap-2 shadow-lg shadow-black/20 h-full overflow-hidden">
       <div className="flex items-center gap-2">
         <div className="p-2 rounded-btn bg-white/5">{icon}</div>
       </div>

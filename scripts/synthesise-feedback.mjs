@@ -10,9 +10,9 @@
  *   node scripts/synthesise-feedback.mjs
  *
  * Environment:
- *   ANTHROPIC_API_KEY — required (or set in app/.env.local)
- *   API_URL           — base URL for the generations API (default: http://localhost:3000)
- *   MIN_RATINGS       — minimum number of rated generations required (default: 5)
+ *   AI_GATEWAY_API_KEY — required (or set in app/.env.local)
+ *   API_URL            — base URL for the generations API (default: http://localhost:3000)
+ *   MIN_RATINGS        — minimum number of rated generations required (default: 5)
  *
  * The dev server must be running (npm run dev or vercel dev in app/).
  */
@@ -20,6 +20,8 @@
 import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { generateText } from "ai";
+import { gateway } from "@ai-sdk/gateway";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -41,12 +43,11 @@ try {
 }
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const MIN_RATINGS = Number(process.env.MIN_RATINGS || 5);
 
-if (!ANTHROPIC_API_KEY) {
+if (!process.env.AI_GATEWAY_API_KEY) {
   console.error(
-    "Error: ANTHROPIC_API_KEY not found. Set it in your environment or in app/.env.local."
+    "Error: AI_GATEWAY_API_KEY not found. Set it in your environment or in app/.env.local."
   );
   process.exit(1);
 }
@@ -66,26 +67,11 @@ async function fetchExport() {
 }
 
 async function callClaude(prompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const { text } = await generateText({
+    model: gateway("anthropic/claude-sonnet-4"),
+    prompt,
   });
-
-  if (!res.ok) {
-    throw new Error(`Anthropic API returned ${res.status}: ${await res.text()}`);
-  }
-
-  const data = await res.json();
-  return data.content[0].text;
+  return text;
 }
 
 function buildSummary(gen) {

@@ -39,10 +39,10 @@ export default function MediaCard({ entityId }: MediaCardProps) {
   };
 
   return (
-    <div className="bg-surface rounded-card p-card-px flex flex-col gap-4 shadow-lg shadow-black/20">
+    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20 h-full overflow-hidden">
       {/* Album art + track info */}
-      <div className="flex items-center gap-4">
-        <div className="w-[72px] h-[72px] rounded-btn bg-surface-lighter flex items-center justify-center shrink-0 overflow-hidden">
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="w-[56px] h-[56px] rounded-btn bg-surface-lighter flex items-center justify-center shrink-0 overflow-hidden">
           {attr.entity_picture ? (
             <img
               src={attr.entity_picture}
@@ -50,7 +50,7 @@ export default function MediaCard({ entityId }: MediaCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <Music className="w-8 h-8 text-accent/60" />
+            <Music className="w-7 h-7 text-accent/60" />
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -64,7 +64,7 @@ export default function MediaCard({ entityId }: MediaCardProps) {
       </div>
 
       {/* Progress bar */}
-      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden shrink-0">
         <div
           className="h-full bg-accent/70 rounded-full transition-all duration-500"
           style={{ width: `${progress}%` }}
@@ -72,37 +72,37 @@ export default function MediaCard({ entityId }: MediaCardProps) {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-3 flex-1 min-h-0">
         <button
           onClick={handlePrev}
-          className="w-[56px] h-[56px] rounded-full active:bg-white/10 transition-colors text-white/50 active:text-white flex items-center justify-center"
+          className="w-[48px] h-[48px] rounded-full active:bg-white/10 transition-colors text-white/50 active:text-white flex items-center justify-center"
           aria-label="Previous track"
         >
-          <SkipBack className="w-7 h-7" />
+          <SkipBack className="w-6 h-6" />
         </button>
         <button
           onClick={handlePlayPause}
-          className="w-[72px] h-[72px] rounded-full bg-accent/20 active:bg-accent/30 transition-colors text-accent flex items-center justify-center"
+          className="w-[56px] h-[56px] rounded-full bg-accent/20 active:bg-accent/30 transition-colors text-accent flex items-center justify-center"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
-            <Pause className="w-8 h-8" />
+            <Pause className="w-7 h-7" />
           ) : (
-            <Play className="w-8 h-8" />
+            <Play className="w-7 h-7" />
           )}
         </button>
         <button
           onClick={handleNext}
-          className="w-[56px] h-[56px] rounded-full active:bg-white/10 transition-colors text-white/50 active:text-white flex items-center justify-center"
+          className="w-[48px] h-[48px] rounded-full active:bg-white/10 transition-colors text-white/50 active:text-white flex items-center justify-center"
           aria-label="Next track"
         >
-          <SkipForward className="w-7 h-7" />
+          <SkipForward className="w-6 h-6" />
         </button>
       </div>
 
       {/* Volume slider */}
       {attr.volume_level !== undefined && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <Volume2 className="w-6 h-6 text-white/30 shrink-0" />
           <input
             type="range"

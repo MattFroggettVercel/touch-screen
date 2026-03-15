@@ -199,14 +199,14 @@ export default function EditScreen() {
         fetch: expoFetch as any,
         api: `${CLOUD_API_URL}/api/chat`,
         headers: () => getAuthCookieHeaders(),
+        body: { conversationId, deviceCode: id },
       }),
-    []
+    [conversationId, id]
   );
 
   const { messages, sendMessage, addToolOutput, status, error, clearError } =
     useChat({
       transport,
-      body: { conversationId, deviceCode: id },
       sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
       onError: (err) => {
         setChatError(err?.message || "Something went wrong");

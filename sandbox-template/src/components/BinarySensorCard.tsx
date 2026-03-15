@@ -133,7 +133,7 @@ export default function BinarySensorCard({ entityId }: BinarySensorCardProps) {
 
   return (
     <div
-      className={`bg-surface rounded-card p-card-px flex items-center gap-4 shadow-lg shadow-black/20 transition-all duration-300 min-h-touch-min ${
+      className={`bg-surface rounded-card p-card-px flex items-center gap-4 shadow-lg shadow-black/20 transition-all duration-300 h-full overflow-hidden ${
         isOn ? "ring-1 ring-white/10" : ""
       }`}
     >

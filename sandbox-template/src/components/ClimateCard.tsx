@@ -54,44 +54,44 @@ export default function ClimateCard({ entityId }: ClimateCardProps) {
       : "";
 
   return (
-    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20">
+    <div className="bg-surface rounded-card p-card-px flex flex-col gap-3 shadow-lg shadow-black/20 h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Thermometer className="w-8 h-8 text-accent" />
-          <p className="text-device-sm font-medium">{attr.friendly_name}</p>
+      <div className="flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Thermometer className="w-7 h-7 text-accent shrink-0" />
+          <p className="text-device-sm font-medium truncate">{attr.friendly_name}</p>
         </div>
         {actionLabel && (
-          <span className="text-device-xs text-white/40 capitalize">
+          <span className="text-device-xs text-white/40 capitalize shrink-0">
             {actionLabel}
           </span>
         )}
       </div>
 
       {/* Temperature display */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-1 min-h-0">
         <div>
           <p className="text-device-xs text-white/40">Current</p>
-          <p className="text-device-xl font-light">
+          <p className="text-device-lg font-light">
             {currentTemp !== undefined ? `${currentTemp}°` : "--"}
           </p>
         </div>
         {targetTemp !== undefined && hvacMode !== "off" && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => handleTempChange(-step)}
-              className="w-[56px] h-[56px] rounded-full bg-white/5 active:bg-white/15 flex items-center justify-center text-white/60 active:text-white transition-colors text-device-lg"
+              className="w-[48px] h-[48px] rounded-full bg-white/5 active:bg-white/15 flex items-center justify-center text-white/60 active:text-white transition-colors text-device-base"
               aria-label="Decrease temperature"
             >
               −
             </button>
             <div className="text-center">
               <p className="text-device-xs text-white/40">Target</p>
-              <p className="text-device-lg font-light">{targetTemp}°</p>
+              <p className="text-device-base font-light">{targetTemp}°</p>
             </div>
             <button
               onClick={() => handleTempChange(step)}
-              className="w-[56px] h-[56px] rounded-full bg-white/5 active:bg-white/15 flex items-center justify-center text-white/60 active:text-white transition-colors text-device-lg"
+              className="w-[48px] h-[48px] rounded-full bg-white/5 active:bg-white/15 flex items-center justify-center text-white/60 active:text-white transition-colors text-device-base"
               aria-label="Increase temperature"
             >
               +
@@ -101,19 +101,19 @@ export default function ClimateCard({ entityId }: ClimateCardProps) {
       </div>
 
       {/* Mode selector */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 shrink-0">
         {modes.map((mode) => (
           <button
             key={mode}
             onClick={() => handleModeChange(mode)}
-            className={`flex-1 py-2 rounded-btn flex items-center justify-center gap-1.5 text-device-xs capitalize transition-all duration-200 min-h-[48px] ${
+            className={`flex-1 py-1.5 rounded-btn flex items-center justify-center gap-1 text-device-xs capitalize transition-all duration-200 min-h-[44px] ${
               hvacMode === mode
                 ? "bg-accent/20 text-accent ring-1 ring-accent/30"
                 : "bg-white/5 text-white/40 active:bg-white/10 active:text-white/60"
             }`}
           >
             {modeIcon[mode] ?? null}
-            {mode}
+            <span className="truncate">{mode}</span>
           </button>
         ))}
       </div>

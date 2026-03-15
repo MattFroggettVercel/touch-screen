@@ -145,7 +145,16 @@ export async function POST(request: Request) {
         systemPromptHash,
         model: "anthropic/claude-sonnet-4",
       })
-      .catch((err) => console.error("Generation log insert failed:", err));
+      .onConflictDoUpdate({
+        target: [generationLogs.conversationId, generationLogs.turnNumber],
+        set: {
+          toolCalls: summary.toolCalls,
+          filesChanged: summary.filesChanged,
+          aiResponseExcerpt: summary.aiResponseExcerpt,
+          hadErrors: summary.hadErrors,
+        },
+      })
+      .catch((err) => console.error("Generation log upsert failed:", err));
   }
 
   const modelMessages = await convertToModelMessages(messages);

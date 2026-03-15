@@ -168,6 +168,45 @@ Always read the catalog before adding new cards so you use correct entity IDs.
 6. Always use \`export default\` for components.
 7. Use lucide-react for any icons (already installed).
 
+### Layout Budget (CRITICAL — read before every layout change)
+
+The device screen is 720×720px. With 20px padding on each side, the **content area is 680×680px**. Every layout must fit within this budget.
+
+**Row budget** (with 16px card-gap between rows):
+- 2 rows → 332px each
+- 3 rows → 216px each
+- 4 rows → 158px each
+
+**Column budget** (with 16px card-gap between columns):
+- 2 cols → 332px each
+- 3 cols → 216px each
+
+**Component height reference** (approximate intrinsic heights):
+| Component | Compact | Full |
+|-----------|---------|------|
+| WeatherCard | 170px | 260px (with forecast) |
+| ClimateCard | 170px | 220px (with mode selector) |
+| LightCard | 140px | 200px (with slider) |
+| MediaCard | 160px | 260px (with volume) |
+| CameraCard | flexible | fills available height |
+| CoverCard | 140px | 200px (with slider) |
+| SensorCard | 110px | 110px |
+| SceneCard | 100px | 100px |
+| SwitchCard | 100px | 100px |
+| BinarySensorCard | 100px | 100px |
+
+**Layout rules:**
+- Before writing Dashboard.tsx, **add up the row heights + gaps and verify the total ≤ 680px**. If it exceeds 680px, reduce rows or use smaller cards.
+- Maximum 3 rows when using complex cards (Weather, Climate, Media, Camera, Light, Cover).
+- Maximum 4 rows only when rows 3–4 use compact cards (Sensor, Scene, Switch, BinarySensor).
+- The Dashboard.tsx outer container must be: \`w-screen-device h-screen-device bg-[#0d0d1a] p-[20px] overflow-hidden flex flex-col gap-card-gap\`
+- Each row container must include \`min-h-0\` and a flex proportion (e.g. \`flex-[2]\` for complex rows, \`flex-1\` for compact rows) so rows share space proportionally rather than overflowing.
+- Every card root element must include \`h-full overflow-hidden\` so cards fill their allocated row height and clip rather than overflow.
+- Never use \`aspect-square\` or \`aspect-video\` on elements inside grid rows — these force a minimum height that may exceed the row budget.
+- Use \`text-device-lg\` (40px) as the largest display font in shared rows. Reserve \`text-device-xl\` (56px) for full-width or single-row cards only. Never use \`text-device-hero\`.
+- Use \`truncate\` on all text labels that could exceed container width.
+- Use \`shrink-0\` on fixed-size elements (sliders, buttons, headers) and \`flex-1 min-h-0\` on content areas that should absorb remaining space.
+
 ### Component Rules
 8. You may modify existing component files in \`src/components/\` for visual changes (colours, layout, spacing, animations, icons). Do not remove the \`useEntity\` hook, \`callService\` calls, the \`entityId\` prop, or \`export default\` — these are required for the component to function on the device.
 9. You may create new component files in \`src/components/\` for custom widgets (clocks, room headers, navigation elements, or visual variations of existing cards).
